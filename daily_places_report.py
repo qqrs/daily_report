@@ -54,49 +54,11 @@ def daily_places_report():
 
 
     for day in resp.json():
-        #stats = extract_daily_place_work_stats(day)
-        #stats = extract_daily_place_home_stats(day)
         stats = extract_daily_place_stats(day, stats_defs)
         if stats:
             pprint(stats, width=240)
         else:
             print('---')
-
-def extract_daily_place_work_stats(day, filter_place='Octopart.com'):
-        date = dateutil.parser.parse(day['date'])
-        if date.weekday() in (5, 6):        # Skip Sat, Sun
-            return None
-        day_places = day['segments'] or []
-        times = [
-            (dateutil.parser.parse(v['startTime']),
-             dateutil.parser.parse(v['endTime']))
-                for v in day_places if v['place'].get('name') == filter_place]
-        for v in day_places:
-            print(v['place'].get('name'))
-
-        return {
-            'date': date.strftime('%a %m-%d-%Y'),
-            # TODO: fix hours across midnight boundaries
-            'hours': '%.2f' % sum((t[1] - t[0]).total_seconds() / 3600 for t in times),
-            'times': ['%s - %s' % (t[0].strftime('%I:%M %p'), t[1].strftime('%I:%M %p')) for t in times]
-            #'times': ['%s - %s' % (str(t[0]), str(t[1])) for t in times]
-        }
-
-def extract_daily_place_home_stats(day, filter_place='Home'):
-        date = dateutil.parser.parse(day['date'])
-        if date.weekday() in (5, 6):        # Skip Sat, Sun
-            return None
-        day_places = day['segments'] or []
-        times = [
-            (dateutil.parser.parse(v['startTime']),
-             dateutil.parser.parse(v['endTime']))
-                for v in day_places if v['place'].get('name') == filter_place]
-        return {
-            'date': date.strftime('%a %m-%d-%Y'),
-            'hleft': times[0][1].strftime('%I:%M %p') if times else None,
-            #'times': ['%s - %s' % (t[0].strftime('%I:%M %p'), t[1].strftime('%I:%M %p')) for t in times]
-            'times': ['%s - %s' % (str(t[0]), str(t[1])) for t in times]
-        }
 
 
 def extract_daily_place_stats(day, defs):
