@@ -8,34 +8,34 @@ import secrets
 
 
 def main():
+    #print get_access_token()
+    daily_places_report()
+
+
+def get_access_token():
+    resp = requests.post('https://api.moves-app.com/oauth/v1/access_token', {
+        'grant_type': 'authorization_code',
+        'code': secrets.code,
+        'client_id': secrets.client_id,
+        'client_secret': secrets.client_secret,
+        'redirect_uri': 'http://qqrs.github.io/'})
+    if resp.status_code != 200:
+       print(resp.text)
+       raise Exception('Error %s: %s' % (resp.status_code, resp.json()['error']))
+    access_token = resp.json()['access_token']
+    return access_token
+
+
+#def broken_get_access_token():
     #moves = MovesClient()
-    #access_token = moves.get_oauth_token(code)
-    #print(access_token)
+    #access_token = moves.get_oauth_token(secrets.code)
+    #return access_token
 
-    #print(moves.api('/user/profile', 'GET', params={'access_token': access_token}))
 
-    #resp = requests.post('https://api.moves-app.com/oauth/v1/access_token', {
-        #'grant_type': 'authorization_code',
-        #'code': secrets.code,
-        #'client_id': secrets.client_id,
-        #'client_secret': secrets.client_secret,
-        #'redirect_uri': 'http://qqrs.github.io/'})
-    #if resp.status_code != 200:
-    #   print(resp.text)
-    #access_token = resp.json()['access_token']
-    #print access_token
-
+def daily_places_report():
     moves = MovesClient()
-    #resp = moves.api('user/profile', 'GET', params={'access_token': access_token})
-
-    #resp = moves.api('user/places/daily/20160217', 'GET', params={'access_token': access_token})
-    #today_places = resp.json()[0]['segments']
-    #print([(v['place']['name'], v['startTime'], v['endTime']) for v in today_places])
-    #octopart_start_iso = [v for v in today_places if v['place']['name'] == 'Octopart.com'][0]['startTime']
-    #octopart_start_dt = dateutil.parser.parse(octopart_start_iso)
-    #print(octopart_start_dt)
-
-    resp = moves.api('user/places/daily/201602', 'GET', params={'access_token': secrets.access_token})
+    resp = moves.api('user/places/daily/201602', 'GET',
+                     params={'access_token': secrets.access_token})
 
     stats_defs = {
         'work': {
