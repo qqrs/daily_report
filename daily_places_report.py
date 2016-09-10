@@ -116,10 +116,10 @@ def get_stat_value_from_times(stat_type, times):
 
 
 def send_email(subject, body, recipient='qqrsmith@gmail.com'):
-    msg = MIMEText('This is the body of the message.')
+    msg = MIMEText(body)
     msg['To'] = recipient
     msg['From'] = 'dailyreport@gifball.com'
-    msg['Subject'] = 'Simple test message'
+    msg['Subject'] = subject
 
     server = smtplib.SMTP('localhost')
     #server.set_debuglevel(True) # show communication with the server
