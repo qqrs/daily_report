@@ -1,8 +1,11 @@
 from moves import MovesClient
 import requests
 import dateutil.parser
-from pprint import pprint
+from pprint import pprint, pformat
 from collections import defaultdict
+import smtplib
+import email.utils
+from email.mime.text import MIMEText
 
 import secrets
 
@@ -32,9 +35,10 @@ def get_access_token():
     #return access_token
 
 
-def daily_places_report():
+def daily_places_report(month='201606'):
     moves = MovesClient()
-    resp = moves.api('user/places/daily/201602', 'GET',
+    api_path = 'user/places/daily/%s' % month
+    resp = moves.api(api_path, 'GET',
                      params={'access_token': secrets.access_token})
 
     stats_defs = {
@@ -52,13 +56,19 @@ def daily_places_report():
         },
     }
 
-
+    lines = []
     for day in resp.json():
         stats = extract_daily_place_stats(day, stats_defs)
         if stats:
-            pprint(stats, width=240)
+            #pprint(stats, width=240)
+            lines.append(pformat(stats, width=240))
         else:
-            print('---')
+            #print('---')
+            lines.append('---')
+
+    buf = '\n'.join(lines)
+    print(buf)
+    send_email('daily report', buf)
 
 
 def extract_daily_place_stats(day, defs):
@@ -91,18 +101,32 @@ def get_stat_value_from_times(stat_type, times):
     if stat_type == 'hours':
         # TODO: fix hours across midnight boundaries
         return '%.2f' % sum((t[1] - t[0]).total_seconds() / 3600 for t in times)
-    elif stat_type == 'times': 
+    elif stat_type == 'times':
         return ['%s - %s' % (t[0].strftime('%I:%M %p'),
                              t[1].strftime('%I:%M %p'))
                                 for t in times]
-    elif stat_type == 'arrive_morning': 
+    elif stat_type == 'arrive_morning':
         return times[0][0].strftime('%I:%M %p') if times else None
-    elif stat_type == 'depart_morning': 
+    elif stat_type == 'depart_morning':
         return times[0][1].strftime('%I:%M %p') if times else None
-    elif stat_type == 'depart_evening': 
+    elif stat_type == 'depart_evening':
         return times[-1][1].strftime('%I:%M %p') if times else None
     else:
         raise Exception('Unrecognized stat_type: %s' % stat_type)
+
+
+def send_email(subject, body, recipient='qqrsmith@gmail.com'):
+    msg = MIMEText('This is the body of the message.')
+    msg['To'] = recipient
+    msg['From'] = 'dailyreport@gifball.com'
+    msg['Subject'] = 'Simple test message'
+
+    server = smtplib.SMTP('localhost')
+    #server.set_debuglevel(True) # show communication with the server
+    try:
+        server.sendmail(msg['From'], [recipient], msg.as_string())
+    finally:
+        server.quit()
 
 
 if __name__ == '__main__':
