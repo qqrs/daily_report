@@ -1,5 +1,7 @@
 from moves import MovesClient
+import datetime
 import requests
+import socket
 import dateutil.parser
 from pprint import pprint, pformat
 from collections import defaultdict
@@ -36,6 +38,7 @@ def get_access_token():
 
 
 def daily_places_report(month='201606'):
+    month = datetime.date.today().strftime('%Y%m')
     moves = MovesClient()
     api_path = 'user/places/daily/%s' % month
     resp = moves.api(api_path, 'GET',
@@ -121,7 +124,11 @@ def send_email(subject, body, recipient='qqrsmith@gmail.com'):
     msg['From'] = 'dailyreport@gifball.com'
     msg['Subject'] = subject
 
-    server = smtplib.SMTP('localhost')
+    try:
+        server = smtplib.SMTP('localhost')
+    except socket.error:
+        return
+
     #server.set_debuglevel(True) # show communication with the server
     try:
         server.sendmail(msg['From'], [recipient], msg.as_string())
