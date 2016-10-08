@@ -1,20 +1,16 @@
 from moves import MovesClient
 import datetime
 import requests
-import socket
 import dateutil.parser
-from pprint import pprint, pformat
+from pprint import pprint
 from collections import defaultdict
-import smtplib
-import email.utils
-from email.mime.text import MIMEText
 
 import secrets
 
 
 def main():
     #print get_access_token()
-    daily_places_report()
+    pprint(daily_places_report())
 
 
 def get_access_token():
@@ -37,8 +33,11 @@ def get_access_token():
     #return access_token
 
 
-def daily_places_report(month='201606'):
-    month = datetime.date.today().strftime('%Y%m')
+def daily_places_report(today=None, month=None):
+    if month is None:
+        if today is None:
+            today = datetime.date.today()
+        month = today.strftime('%Y%m')
     moves = MovesClient()
     api_path = 'user/places/daily/%s' % month
     resp = moves.api(api_path, 'GET',
@@ -54,30 +53,24 @@ def daily_places_report(month='201606'):
             'stats': {'depart_morning'}
         },
         'gym': {
-            'place_names': {'24 Hour Fitness', 'Calexico Cart'},
+            'place_names': {'Blink Fitness Williamsburg'},
             'stats': {'hours'}
         },
     }
 
-    lines = []
-    for day in resp.json():
-        stats = extract_daily_place_stats(day, stats_defs)
-        if stats:
-            #pprint(stats, width=240)
-            lines.append(pformat(stats, width=240))
-        else:
-            #print('---')
-            lines.append('---')
+    stats = {}
+    for day_dict in resp.json():
+        (date, day_stats) = extract_daily_place_stats(day_dict, stats_defs)
+        if date and day_stats:
+            stats[date] = day_stats
 
-    buf = '\n'.join(lines)
-    print(buf)
-    send_email('daily report', buf)
+    return stats
 
 
 def extract_daily_place_stats(day, defs):
-    date = dateutil.parser.parse(day['date'])
+    date = dateutil.parser.parse(day['date']).date()
     if date.weekday() in (5, 6):        # Skip Sat, Sun
-        return None
+        return (None, None)
     day_places = day['segments'] or []
     place_times = defaultdict(list)
     for v in day_places:
@@ -87,17 +80,14 @@ def extract_daily_place_stats(day, defs):
                     (dateutil.parser.parse(v['startTime']),
                      dateutil.parser.parse(v['endTime'])))
 
-    stats = {
-        'date': date.strftime('%a %m-%d-%Y'),
-    }
-
+    stats = {}
     for place, d in defs.iteritems():
         times = place_times[place]
         for stat_type in d['stats']:
             stat_name = place + '_' + stat_type
             val = get_stat_value_from_times(stat_type, times)
             stats[stat_name] = val or '        '
-    return stats
+    return (date, stats)
 
 
 def get_stat_value_from_times(stat_type, times):
@@ -116,24 +106,6 @@ def get_stat_value_from_times(stat_type, times):
         return times[-1][1].strftime('%I:%M %p') if times else None
     else:
         raise Exception('Unrecognized stat_type: %s' % stat_type)
-
-
-def send_email(subject, body, recipient='qqrsmith@gmail.com'):
-    msg = MIMEText(body)
-    msg['To'] = recipient
-    msg['From'] = 'dailyreport@gifball.com'
-    msg['Subject'] = subject
-
-    try:
-        server = smtplib.SMTP('localhost')
-    except socket.error:
-        return
-
-    #server.set_debuglevel(True) # show communication with the server
-    try:
-        server.sendmail(msg['From'], [recipient], msg.as_string())
-    finally:
-        server.quit()
 
 
 if __name__ == '__main__':

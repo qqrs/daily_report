@@ -9,3 +9,7 @@ client_secret = ''
 code = ''
 
 access_token = ''
+
+
+# Jawbone Move
+jawbone_access_token = ''
