@@ -119,8 +119,8 @@ def send_html_email(subject, body, recipient='qqrsmith@gmail.com'):
 <html>
     <head>
         <style type=\'text/css\'>
-            .dataframe {
-                border: 1px;
+            th, td {
+                border: 1px solid black;
                 margin: 0;
             }
         </style>
