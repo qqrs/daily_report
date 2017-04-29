@@ -122,6 +122,7 @@ def send_html_email(subject, body, recipient='qqrsmith@gmail.com'):
             table, th, td {
                 border: 1px solid black;
                 border-collapse: collapse;
+                padding: 4px;
             }
         </style>
     </head>
