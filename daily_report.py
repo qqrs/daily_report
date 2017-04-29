@@ -64,7 +64,7 @@ def daily_report(today=None):
 def send_email(subject, body, recipient='qqrsmith@gmail.com'):
     msg = MIMEText(body)
     msg['To'] = recipient
-    msg['From'] = 'dailyreport@gifball.com'
+    msg['From'] = 'dailyreport@qqrs.us'
     msg['Subject'] = subject
 
     try:
