@@ -8,6 +8,9 @@ from pprint import pprint, pformat
 import smtplib
 from email.mime.text import MIMEText
 
+import pandas as pd
+pd.set_option('display.width', 240)
+
 import movesapp_report
 import jawbone_report
 
@@ -44,21 +47,39 @@ def daily_report(today=None):
         for (date, day_stats) in report_stats.iteritems():
             stats[date].update(day_stats)
 
-    # Add date field as string.
-    for (date, day_stats) in stats.iteritems():
-        day_stats['date'] = date.strftime('%a %Y-%m-%d')
-
-    lines = []
-    for date in date_range:
-        if date in stats:
-            lines.append(pformat(stats[date], width=240))
-        else:
-            lines.append('---')
-
-    buf = '\n'.join(lines)
-
+    buf = stats_to_str(stats)
     print(buf)
     send_email('daily report', buf)
+
+
+#def stats_to_str(stats):
+    ## Add date field as string.
+    #for (date, day_stats) in stats.iteritems():
+        #day_stats['date'] = date.strftime('%a %Y-%m-%d')
+
+    #lines = []
+    #for date in date_range:
+        #if date in stats:
+            #lines.append(pformat(stats[date], width=240))
+        #else:
+            #lines.append('---')
+
+    #buf = '\n'.join(lines)
+    #return buf
+
+
+def stats_to_str(stats):
+    # Add date field as string.
+    for (date, day_stats) in stats.iteritems():
+        day_stats['date'] = date
+
+    df = pd.DataFrame(stats.values())
+    df.reindex_axis(sorted(df.columns), axis=1)
+    df.set_index(pd.DatetimeIndex(df['date']), inplace=True)
+    df.sort_index(inplace=True)
+
+    buf = df.to_string(formatters={'date': lambda v: v.strftime('%a')})
+    return buf
 
 
 def send_email(subject, body, recipient='qqrsmith@gmail.com'):
