@@ -29,7 +29,7 @@ def daily_sleep_report(start_date=None, end_date=None):
     if end_date:
         end_time = date_to_unix_time(end_date + datetime.timedelta(days=1))
 
-    client = KieferClient(secrets.jawbone_access_token)
+    client = KieferClient(secrets.jawbone['access_token'])
     resp = client.get_sleeps(start_time=start_time, end_time=end_time,
                              limit=100)
     stats = {}

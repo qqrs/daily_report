@@ -1,24 +1,25 @@
-from moves import MovesClient
 import datetime
 import requests
 import dateutil.parser
 from pprint import pprint
 from collections import defaultdict
 
+from moves import MovesClient
+
 import secrets
 
 
 def main():
-    #print get_access_token()
-    pprint(daily_places_report())
+    print get_access_token()
+    #pprint(daily_places_report())
 
 
 def get_access_token():
     resp = requests.post('https://api.moves-app.com/oauth/v1/access_token', {
         'grant_type': 'authorization_code',
-        'code': secrets.code,
-        'client_id': secrets.client_id,
-        'client_secret': secrets.client_secret,
+        'code': secrets.moves['code'],
+        'client_id': secrets.moves['client_id'],
+        'client_secret': secrets.moves['client_secret'],
         'redirect_uri': 'http://qqrs.github.io/'})
     if resp.status_code != 200:
        print(resp.text)
@@ -29,7 +30,7 @@ def get_access_token():
 
 #def broken_get_access_token():
     #moves = MovesClient()
-    #access_token = moves.get_oauth_token(secrets.code)
+    #access_token = moves.get_oauth_token(secrets.moves['code'])
     #return access_token
 
 
@@ -41,7 +42,7 @@ def daily_places_report(today=None, month=None):
     moves = MovesClient()
     api_path = 'user/places/daily/%s' % month
     resp = moves.api(api_path, 'GET',
-                     params={'access_token': secrets.access_token})
+                     params={'access_token': secrets.moves['access_token']})
 
     stats_defs = {
         'work': {
