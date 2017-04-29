@@ -72,6 +72,7 @@ def daily_places_report(today=None, month=None):
 
 def extract_daily_place_stats(day, defs):
     date = dateutil.parser.parse(day['date']).date()
+
     if date.weekday() in (5, 6):        # Skip Sat, Sun
         return (None, None)
     day_places = day['segments'] or []
@@ -79,9 +80,10 @@ def extract_daily_place_stats(day, defs):
     for v in day_places:
         for place, d in defs.iteritems():
             if v['place'].get('name') in d['place_names']:
-                place_times[place].append(
-                    (dateutil.parser.parse(v['startTime']),
-                     dateutil.parser.parse(v['endTime'])))
+                start_time = dateutil.parser.parse(v['startTime'])
+                end_time = dateutil.parser.parse(v['endTime'])
+                if start_time.date() == date:   # Filter out prev day events.
+                    place_times[place].append((start_time, end_time))
 
     stats = {}
     for place, d in defs.iteritems():
