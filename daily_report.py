@@ -47,9 +47,9 @@ def daily_report(today=None):
         for (date, day_stats) in report_stats.iteritems():
             stats[date].update(day_stats)
 
-    buf = stats_to_str(stats)
-    print(buf)
-    send_email('daily report', buf)
+    print(stats_to_str(stats))
+    buf = stats_to_html(stats)
+    send_html_email('daily report', buf)
 
 
 #def stats_to_str(stats):
@@ -82,6 +82,19 @@ def stats_to_str(stats):
     return buf
 
 
+def stats_to_html(stats):
+    # Add date field as string.
+    for (date, day_stats) in stats.iteritems():
+        day_stats['date'] = date
+
+    df = pd.DataFrame(stats.values())
+    df.reindex_axis(sorted(df.columns), axis=1)
+    df.set_index(pd.DatetimeIndex(df['date']), inplace=True)
+    df.sort_index(inplace=True)
+
+    buf = df.to_html(formatters={'date': lambda v: v.strftime('%a')})
+    return buf
+
 def send_email(subject, body, recipient='qqrsmith@gmail.com'):
     msg = MIMEText(body)
     msg['To'] = recipient
@@ -99,6 +112,27 @@ def send_email(subject, body, recipient='qqrsmith@gmail.com'):
         server.sendmail(msg['From'], [recipient], msg.as_string())
     finally:
         server.quit()
+
+
+def send_html_email(subject, body, recipient='qqrsmith@gmail.com'):
+    html = '<html><head></head><body>' + body + '</body></html>'
+    msg = MIMEText(html, 'html')
+    msg['To'] = recipient
+    msg['From'] = 'dailyreport@qqrs.us'
+    msg['Subject'] = subject
+
+    try:
+        server = smtplib.SMTP('localhost')
+    except socket.error:
+        logging.warn('No SMTP server found on localhost')
+        return
+
+    #server.set_debuglevel(True) # show communication with the server
+    try:
+        server.sendmail(msg['From'], [recipient], msg.as_string())
+    finally:
+        server.quit()
+
 
 
 if __name__ == '__main__':
