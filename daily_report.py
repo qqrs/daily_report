@@ -119,9 +119,9 @@ def send_html_email(subject, body, recipient='qqrsmith@gmail.com'):
 <html>
     <head>
         <style type=\'text/css\'>
-            th, td {
+            table, th, td {
                 border: 1px solid black;
-                margin: 0;
+                border-collapse: collapse;
             }
         </style>
     </head>
