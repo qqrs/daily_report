@@ -1,3 +1,4 @@
+import argparse
 import logging
 import datetime
 import calendar
@@ -12,7 +13,16 @@ import jawbone_report
 
 
 def main():
-    #print get_access_token()
+    parser = argparse.ArgumentParser(description='Daily report')
+
+    parser.add_argument('--moves-token', action="store_true", default=False,
+                        help='generate new access token for Moves API')
+
+    options = parser.parse_args()
+    if options.moves_token:
+        print movesapp_report.get_access_token()
+        return
+
     daily_report()
 
 
