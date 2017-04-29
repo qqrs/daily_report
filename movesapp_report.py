@@ -53,7 +53,9 @@ def daily_places_report(today=None, month=None):
             'stats': {'depart_morning'}
         },
         'gym': {
-            'place_names': {'Blink Fitness Williamsburg'},
+            'place_names': {
+                'Blink Fitness Williamsburg', 'Blink Fitness Chelsea',
+                'Blink Fitness Bushwick', 'Blink Fitness Gates'},
             'stats': {'hours'}
         },
     }
