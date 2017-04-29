@@ -115,7 +115,16 @@ def send_email(subject, body, recipient='qqrsmith@gmail.com'):
 
 
 def send_html_email(subject, body, recipient='qqrsmith@gmail.com'):
-    html = '<html><head></head><body>' + body + '</body></html>'
+    html = ("""
+<html>
+    <head>
+        <style type=\'text/css\'>.dataframe {border: 1px}</style>
+    </head>
+    <body>
+""" + body + """
+    </body>
+</html>""")
+
     msg = MIMEText(html, 'html')
     msg['To'] = recipient
     msg['From'] = 'dailyreport@qqrs.us'
